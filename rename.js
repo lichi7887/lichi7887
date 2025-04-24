@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Clash Substore Type Reorder
+// @name         Replace Type and Name Order
 // @namespace    https://github.com/your-namespace
 // @version      1.0
-// @description  将 Clash 配置文件中的 type 字段移动到 name 字段之后
+// @description  自动将 "type":"(.*?)","name":"(.*?)" 替换为 "name":"$2","type":"$1"
 // @author       Your Name
 // @match        *://*/*
 // @grant        none
@@ -11,39 +11,20 @@
 (function () {
     'use strict';
 
-    // 处理 proxies 数组，将 type 移动到 name 后面
-    function reorderProxies(proxies) {
-        return proxies.map(proxy => {
-            if (proxy.type && proxy.name) {
-                const { type, name, ...rest } = proxy;
-                return { name, type, ...rest };
-            }
-            return proxy;
-        });
+    // 定义正则表达式
+    const regex = /"type":"(.*?)","name":"(.*?)"/g;
+
+    // 获取页面内容
+    let content = document.body.innerText;
+
+    // 替换内容
+    const replacedContent = content.replace(regex, '"name":"$2","type":"$1"');
+
+    // 如果内容有变化，则更新页面内容
+    if (content !== replacedContent) {
+        document.body.innerText = replacedContent;
+        console.log('内容已替换完成');
+    } else {
+        console.log('未发现需要替换的内容');
     }
-
-    // 处理整个配置文件
-    function processConfig(config) {
-        if (config.proxies && Array.isArray(config.proxies)) {
-            config.proxies = reorderProxies(config.proxies);
-        }
-        return config;
-    }
-
-    // 读取配置文件
-    const rawConfig = $argument; // Substore 会将配置文件内容传递到 $argument
-    let config;
-
-    try {
-        config = JSON.parse(rawConfig); // 解析 JSON 格式的配置文件
-    } catch (e) {
-        console.error('解析配置文件失败:', e);
-        return;
-    }
-
-    // 处理配置文件
-    const updatedConfig = processConfig(config);
-
-    // 输出处理后的配置文件
-    console.log(JSON.stringify(updatedConfig, null, 2)); // 打印结果到控制台
 })();
