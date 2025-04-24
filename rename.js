@@ -11,11 +11,7 @@
 (function () {
     'use strict';
 
-    /**
-     * 重新排序 proxies 中的字段，将 type 移动到 name 后面
-     * @param {Array} proxies - Clash 配置文件中的 proxies 数组
-     * @returns {Array} - 重新排序后的 proxies 数组
-     */
+    // 处理 proxies 数组，将 type 移动到 name 后面
     function reorderProxies(proxies) {
         return proxies.map(proxy => {
             if (proxy.type && proxy.name) {
@@ -26,11 +22,7 @@
         });
     }
 
-    /**
-     * 处理 Clash 配置文件，将 type 移动到 name 后面
-     * @param {Object} config - Clash 配置文件对象
-     * @returns {Object} - 处理后的配置文件对象
-     */
+    // 处理整个配置文件
     function processConfig(config) {
         if (config.proxies && Array.isArray(config.proxies)) {
             config.proxies = reorderProxies(config.proxies);
@@ -38,31 +30,20 @@
         return config;
     }
 
-    /**
-     * 从 YAML 字符串解析为对象
-     * @param {string} yamlStr - YAML 字符串
-     * @returns {Object} - 解析后的对象
-     */
-    function parseYAML(yamlStr) {
-        const yaml = require('js-yaml');
-        return yaml.load(yamlStr);
+    // 读取配置文件
+    const rawConfig = $argument; // Substore 会将配置文件内容传递到 $argument
+    let config;
+
+    try {
+        config = JSON.parse(rawConfig); // 解析 JSON 格式的配置文件
+    } catch (e) {
+        console.error('解析配置文件失败:', e);
+        return;
     }
 
-    /**
-     * 将对象转换为 YAML 字符串
-     * @param {Object} obj - 对象
-     * @returns {string} - YAML 字符串
-     */
-    function stringifyYAML(obj) {
-        const yaml = require('js-yaml');
-        return yaml.dump(obj, { lineWidth: -1 });
-    }
-
-    // 示例用法
-    const inputYAML = `...`; // 替换为你的 YAML 内容
-    const config = parseYAML(inputYAML);
+    // 处理配置文件
     const updatedConfig = processConfig(config);
-    const outputYAML = stringifyYAML(updatedConfig);
 
-    console.log(outputYAML); // 输出处理后的 YAML
+    // 输出处理后的配置文件
+    console.log(JSON.stringify(updatedConfig, null, 2)); // 打印结果到控制台
 })();
